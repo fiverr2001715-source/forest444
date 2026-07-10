@@ -14,7 +14,7 @@
      ضع كود مونيتاق (Monetag SDK) هنا فوق وسم head
      سجّل تطبيقك في Monetag Publisher Platform كـ Telegram Mini App
      وخذ الـ snippet الخاص فيك، مثال عام بعد ما تحط الكود:
-     <script src='//libtl.com/sdk.js' data-zone='YOUR_ZONE_ID' data-sdk='show_YOUR_ZONE_ID'></script>
+   <script src="//libtl.com/sdk.js" data-zone="11267765" data-sdk="show_11267765"></script>
      ============================================================ -->
 <script src='//libtl.com/sdk.js' data-zone='11267765' data-sdk='show_11267765'></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -337,7 +337,7 @@ try{ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }catch(e){}
    إعداد مونيتاق — بدّل الاسم زي ما أعطاك مونيتاق بالضبط
 ================================================================== */
 const MONETAG = {
-  showAdFunctionName: 'show_YOUR_ZONE_ID' // <-- بدّل هذا باسم الدالة الحقيقي من مونيتاق
+  showAdFunctionName: 'show_11267765'
 };
 function isMonetagReady(){
   return typeof window[MONETAG.showAdFunctionName] === 'function';
