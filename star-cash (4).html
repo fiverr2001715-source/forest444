@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>غابة الأرانب - اصطد واجمع</title>
+
+<!-- ============================================================
+     Telegram WebApp SDK
+==================================================================-->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+<!-- ============================================================
+     ضع كود مونيتاق (Monetag SDK) هنا فوق وسم head
+     سجّل تطبيقك في Monetag Publisher Platform كـ Telegram Mini App
+     وخذ الـ snippet الخاص فيك، مثال عام بعد ما تحط الكود:
+     <script src='//libtl.com/sdk.js' data-zone='YOUR_ZONE_ID' data-sdk='show_YOUR_ZONE_ID'></script>
+     ============================================================ -->
+<script src="//libtl.com/sdk.js" data-zone="YOUR_ZONE_ID" data-sdk="show_YOUR_ZONE_ID"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-deep:#0e2818;
+    --bg-deep-2:#153422;
+    --violet:#4E9A5F;
+    --coral:#FF8C42;
+    --amber:#FFCF56;
+    --teal:#6FCF97;
+    --ink:#F3FFF4;
+    --ink-dim:#AFCBB2;
+    --card:#1C3A26;
+    --card-line:rgba(255,255,255,.08);
+    --shadow-glow:0 0 40px rgba(78,154,95,.35);
+  }
+
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0; height:100%;}
+  body{
+    font-family:'Tajawal', sans-serif;
+    background:
+      radial-gradient(circle at 20% 10%, rgba(255,140,66,.18), transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(111,207,151,.18), transparent 40%),
+      radial-gradient(circle at 50% 100%, rgba(78,154,95,.28), transparent 55%),
+      linear-gradient(180deg, var(--bg-deep) 0%, var(--bg-deep-2) 100%);
+    color:var(--ink);
+    min-height:100vh;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* floating ambient stars */
+  .stars{position:fixed; inset:0; pointer-events:none; z-index:0;}
+  .stars span{
+    position:absolute; width:3px; height:3px; border-radius:50%;
+    background:#FFE9A8; opacity:.5; animation:twinkle 3s ease-in-out infinite;
+    box-shadow:0 0 6px 1px rgba(255,207,86,.6);
+  }
+  @keyframes twinkle{0%,100%{opacity:.15;} 50%{opacity:.9;}}
+
+  .wrap{position:relative; z-index:1; max-width:480px; margin:0 auto; padding:18px 16px 40px;}
+
+  /* ---------------- header ---------------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px;
+  }
+  .brand{display:flex; align-items:center; gap:8px;}
+  .brand .logo{
+    width:34px; height:34px; border-radius:10px;
+    background:linear-gradient(135deg, var(--coral), var(--amber));
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; box-shadow:var(--shadow-glow);
+  }
+  .brand b{font-family:'Baloo 2', sans-serif; font-size:17px; letter-spacing:.3px;}
+  .wallet{
+    display:flex; align-items:center; gap:6px;
+    background:var(--card); border:1px solid var(--card-line);
+    padding:8px 14px; border-radius:999px;
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:14px;
+  }
+  .wallet .usd{color:var(--amber);}
+
+  /* ---------------- journey (4 days) ---------------- */
+  .journey{
+    background:var(--card); border:1px solid var(--card-line);
+    border-radius:20px; padding:16px 18px 14px; margin-bottom:16px;
+  }
+  .journey-head{
+    display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px;
+  }
+  .journey-head .title{font-size:13px; color:var(--ink-dim); font-weight:700;}
+  .journey-head .sub{font-size:12px; color:var(--teal); font-weight:700;}
+  .days{display:flex; align-items:center; justify-content:space-between; position:relative;}
+  .days::before{
+    content:""; position:absolute; top:16px; right:16px; left:16px; height:3px;
+    background:rgba(255,255,255,.1); border-radius:3px; z-index:0;
+  }
+  .day-node{
+    position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; gap:6px; width:60px;
+  }
+  .day-dot{
+    width:34px; height:34px; border-radius:50%;
+    background:#3a2a63; border:2px solid rgba(255,255,255,.15);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Baloo 2', sans-serif; font-weight:800; font-size:14px; color:var(--ink-dim);
+    transition:.3s;
+  }
+  .day-node.done .day-dot{
+    background:linear-gradient(135deg, var(--teal), #2fa89e); color:#08221f; border-color:transparent;
+    box-shadow:0 0 14px rgba(78,205,196,.55);
+  }
+  .day-node.active .day-dot{
+    background:linear-gradient(135deg, var(--coral), var(--amber)); color:#3a1420; border-color:transparent;
+    animation:pulseDot 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseDot{0%,100%{box-shadow:0 0 0 0 rgba(255,107,157,.5);} 50%{box-shadow:0 0 0 8px rgba(255,107,157,0);}}
+  .day-node span.lbl{font-size:11px; color:var(--ink-dim);}
+  .day-node.done span.lbl, .day-node.active span.lbl{color:var(--ink);}
+
+  /* ---------------- main tap orb ---------------- */
+  .stage{
+    background:radial-gradient(circle at 50% 30%, rgba(123,92,250,.35), transparent 60%);
+    border-radius:26px; border:1px solid var(--card-line);
+    padding:26px 18px 22px; text-align:center; margin-bottom:16px; position:relative; overflow:hidden;
+  }
+  .points-big{font-family:'Baloo 2', sans-serif; font-weight:800; font-size:44px; line-height:1; margin-bottom:2px;}
+  .points-sub{font-size:12px; color:var(--ink-dim); margin-bottom:20px;}
+  .orb-zone{position:relative; height:190px; display:flex; align-items:center; justify-content:center;}
+  .orb{
+    width:150px; height:150px; border-radius:50%; cursor:pointer; user-select:none;
+    background:conic-gradient(from 180deg, var(--coral), var(--amber), var(--teal), var(--violet), var(--coral));
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 0 50px rgba(255,200,87,.35), inset 0 0 30px rgba(255,255,255,.25);
+    animation:floatOrb 3.4s ease-in-out infinite;
+    transition:transform .08s;
+  }
+  .orb:active{transform:scale(.92);}
+  .orb.gated{
+    filter:grayscale(.65) brightness(.75); animation-play-state:paused;
+    box-shadow:0 0 30px rgba(255,255,255,.12), inset 0 0 20px rgba(255,255,255,.15);
+  }
+  .orb.gated .orb-inner{position:relative;}
+  .orb.gated .orb-inner::after{content:'📺'; position:absolute; font-size:26px; transform:translate(18px,-18px);}
+  .orb-inner{
+    width:112px; height:112px; border-radius:50%; background:var(--bg-deep-2);
+    display:flex; align-items:center; justify-content:center; font-size:46px;
+  }
+  @keyframes floatOrb{0%,100%{transform:translateY(0);} 50%{transform:translateY(-10px);}}
+  .float-pop{
+    position:absolute; font-family:'Baloo 2', sans-serif; font-weight:800; font-size:20px;
+    color:var(--amber); pointer-events:none; animation:popUp .9s ease-out forwards;
+  }
+  @keyframes popUp{0%{opacity:1; transform:translateY(0) scale(1);} 100%{opacity:0; transform:translateY(-70px) scale(1.3);}}
+
+  .energy-row{display:flex; align-items:center; gap:10px; margin-top:16px; font-size:12px; color:var(--ink-dim);}
+  .energy-track{flex:1; height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden;}
+  .energy-fill{height:100%; background:linear-gradient(90deg, var(--teal), var(--violet)); border-radius:999px; transition:width .3s;}
+
+  /* ---------------- ad buttons (Monetag touchpoints) ---------------- */
+  .ads-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px;}
+  .ad-btn{
+    border:1px solid var(--card-line); border-radius:16px; padding:14px 10px;
+    text-align:center; cursor:pointer; transition:.15s;
+  }
+  .ad-btn:active{transform:scale(.96);}
+  .ad-btn.gold{background:linear-gradient(160deg, rgba(255,200,87,.18), rgba(255,107,157,.12)); }
+  .ad-btn.cyan{background:linear-gradient(160deg, rgba(78,205,196,.18), rgba(123,92,250,.12)); }
+  .ad-btn .ico{font-size:24px; margin-bottom:4px;}
+  .ad-btn .title{font-weight:700; font-size:13px;}
+  .ad-btn .sub{font-size:11px; color:var(--ink-dim); margin-top:2px;}
+
+  /* ---------------- withdraw card ---------------- */
+  .withdraw{
+    background:var(--card); border:1px solid var(--card-line); border-radius:20px; padding:18px;
+  }
+  .withdraw .row{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .withdraw .row b{font-family:'Baloo 2', sans-serif; font-size:15px;}
+  .progress-track{height:12px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; margin-bottom:10px;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--coral), var(--amber)); border-radius:999px; transition:width .4s;}
+  .withdraw-note{font-size:12px; color:var(--ink-dim); margin-bottom:14px; line-height:1.7;}
+  .threshold-row{display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--ink-dim); margin:-4px 0 12px;}
+  .threshold-flag{color:var(--amber); font-weight:700;}
+  .btn-withdraw{
+    width:100%; border:none; border-radius:14px; padding:14px; font-family:'Baloo 2', sans-serif;
+    font-weight:700; font-size:16px; cursor:pointer; transition:.15s;
+  }
+  .btn-withdraw.locked{background:rgba(255,255,255,.06); color:var(--ink-dim);}
+  .btn-withdraw.unlocked{
+    background:linear-gradient(135deg, var(--amber), var(--coral)); color:#3a1420;
+    box-shadow:0 8px 24px rgba(255,107,157,.35);
+  }
+
+  /* ---------------- toast ---------------- */
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(120%);
+    background:#12081f; border:1px solid var(--card-line); color:var(--ink);
+    padding:12px 20px; border-radius:14px; font-size:13px; z-index:50; max-width:90%;
+    text-align:center; transition:transform .35s ease; box-shadow:0 10px 30px rgba(0,0,0,.4);
+  }
+  .toast.show{transform:translateX(-50%) translateY(0);}
+
+  /* ---------------- modal ---------------- */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(10,5,20,.72); backdrop-filter:blur(4px);
+    display:flex; align-items:center; justify-content:center; z-index:60;
+    opacity:0; pointer-events:none; transition:opacity .25s;
+  }
+  .modal-overlay.show{opacity:1; pointer-events:auto;}
+  .modal{
+    background:var(--card); border:1px solid var(--card-line); border-radius:22px;
+    padding:26px 22px; max-width:340px; width:88%; text-align:center;
+    transform:scale(.9); transition:transform .25s;
+  }
+  .modal-overlay.show .modal{transform:scale(1);}
+  .modal .emoji{font-size:44px; margin-bottom:8px;}
+  .modal h3{font-family:'Baloo 2', sans-serif; margin:0 0 8px;}
+  .modal p{font-size:13px; color:var(--ink-dim); line-height:1.7; margin:0 0 18px;}
+  .modal button{
+    border:none; border-radius:12px; padding:12px 20px; font-family:'Tajawal'; font-weight:700;
+    background:linear-gradient(135deg, var(--teal), var(--violet)); color:#fff; cursor:pointer; width:100%;
+  }
+
+  .footer-note{text-align:center; font-size:11px; color:var(--ink-dim); margin-top:18px; line-height:1.8;}
+</style>
+</head>
+<body>
+
+<div class="stars" id="starsField"></div>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">🐇</div>
+      <b>غابة الأرانب</b>
+    </div>
+    <div class="wallet"><span class="usd">$<span id="usdValue">0.00</span></span></div>
+  </div>
+
+  <!-- 4-day journey -->
+  <div class="journey">
+    <div class="journey-head">
+      <span class="title">رحلة الصيد — ٣ أيام</span>
+      <span class="sub" id="journeySub">اليوم ١ من ٣</span>
+    </div>
+    <div class="days" id="daysRow"></div>
+  </div>
+
+  <!-- Tap stage -->
+  <div class="stage">
+    <div class="points-big" id="pointsBig">0</div>
+    <div class="points-sub">جزرة من أصل 15 لفتح السحب</div>
+
+    <div class="orb-zone">
+      <div class="orb" id="tapOrb">
+        <div class="orb-inner">🐰</div>
+      </div>
+    </div>
+
+    <div class="energy-row">
+      <span>⚡</span>
+      <div class="energy-track"><div class="energy-fill" id="energyFill" style="width:100%"></div></div>
+      <span id="energyText">100/100</span>
+    </div>
+  </div>
+
+  <!-- Ad touchpoints -->
+  <div class="ads-grid">
+    <div class="ad-btn gold" id="btnBonusAd">
+      <div class="ico">🥕</div>
+      <div class="title">جزرة إضافية</div>
+      <div class="sub">شاهد إعلان (+2)</div>
+    </div>
+    <div class="ad-btn cyan" id="btnRefillAd">
+      <div class="ico">🍃</div>
+      <div class="title">تعبئة الطاقة</div>
+      <div class="sub">شاهد إعلان</div>
+    </div>
+  </div>
+
+  <!-- Withdraw -->
+  <div class="withdraw">
+    <div class="row">
+      <b>رصيد السحب</b>
+      <b id="progressLabel">0 / 15</b>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="withdrawProgress" style="width:0%"></div></div>
+    <div class="threshold-row">
+      <span>$0.00</span>
+      <span class="threshold-flag">🏁 خط السحب عند $<span id="thresholdUsd">5.00</span></span>
+    </div>
+    <div class="withdraw-note" id="withdrawNote">
+      اصطد 15 جزرة عبر ثلاثة أيام لعب لتحويلها إلى 5.00$ وسحبها.
+    </div>
+    <button class="btn-withdraw locked" id="btnWithdraw">🔒 السحب مقفل</button>
+  </div>
+
+  <div class="footer-note">تحديث تلقائي كل يوم • جزراتك تُحفظ على جهازك</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="emoji" id="modalEmoji">🎉</div>
+    <h3 id="modalTitle">تهانينا!</h3>
+    <p id="modalText"></p>
+    <button id="modalBtn">تمام</button>
+  </div>
+</div>
+
+<script>
+/* ==================================================================
+   إعدادات عامة
+================================================================== */
+const MAX_ENERGY        = 100;
+const ENERGY_REGEN_MS   = 3000;   // نقطة طاقة واحدة كل 3 ثواني
+const TAP_ENERGY_COST   = 1;
+const DAILY_CAP         = 5;      // أقصى نقاط تُجمع بالضغط يومياً (5×3=15)
+const TARGET_POINTS     = 15;
+const MIN_DAYS          = 3;
+const BONUS_AD_POINTS   = 2;
+const WITHDRAW_USD      = 5.00;   // القيمة بالدولار عند الوصول لـ TARGET_POINTS
+const TAPS_PER_GATE     = 50;     // كل 50 ضغطة، لازم تتفرج إعلان قصير عشان تكمل
+const GATE_BONUS_POINTS = 1;      // جزرة إضافية بسيطة مقابل مشاهدة إعلان البوابة
+
+/* ==================================================================
+   تهيئة تطبيق تلغرام (اختياري لكن مفيد)
+================================================================== */
+try{ Telegram.WebApp.ready(); Telegram.WebApp.expand(); }catch(e){}
+
+/* ==================================================================
+   إعداد مونيتاق — بدّل الاسم زي ما أعطاك مونيتاق بالضبط
+================================================================== */
+const MONETAG = {
+  showAdFunctionName: 'show_YOUR_ZONE_ID' // <-- بدّل هذا باسم الدالة الحقيقي من مونيتاق
+};
+function isMonetagReady(){
+  return typeof window[MONETAG.showAdFunctionName] === 'function';
+}
+function showRewardedAd(onReward, onFail){
+  if(isMonetagReady()){
+    window[MONETAG.showAdFunctionName]()
+      .then(() => onReward())
+      .catch(() => { if(onFail) onFail(); });
+  } else {
+    if(onFail) onFail();
+  }
+}
+
+/* ==================================================================
+   الحالة والتخزين
+================================================================== */
+const STORAGE_KEY = 'starCashState_v1';
+const todayStr = () => new Date().toISOString().slice(0,10);
+
+function loadState(){
+  let s;
+  try{ s = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){ s = null; }
+  if(!s){
+    s = {
+      totalPoints: 0,
+      energy: MAX_ENERGY,
+      lastEnergyTs: Date.now(),
+      activeDays: [],
+      dailyEarned: {},
+      totalTaps: 0,
+      gated: false
+    };
+  }
+  if(s.totalTaps === undefined) s.totalTaps = 0;
+  if(s.gated === undefined) s.gated = false;
+  return s;
+}
+function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+let state = loadState();
+
+function registerTodayActive(){
+  const t = todayStr();
+  if(!state.activeDays.includes(t)) state.activeDays.push(t);
+  if(state.dailyEarned[t] === undefined) state.dailyEarned[t] = 0;
+}
+registerTodayActive();
+
+/* ==================================================================
+   عناصر الواجهة
+================================================================== */
+const pointsBigEl   = document.getElementById('pointsBig');
+const usdValueEl    = document.getElementById('usdValue');
+const energyFillEl  = document.getElementById('energyFill');
+const energyTextEl  = document.getElementById('energyText');
+const daysRowEl     = document.getElementById('daysRow');
+const journeySubEl  = document.getElementById('journeySub');
+const progressFillEl= document.getElementById('withdrawProgress');
+const progressLabelEl = document.getElementById('progressLabel');
+const withdrawNoteEl  = document.getElementById('withdrawNote');
+const thresholdUsdEl  = document.getElementById('thresholdUsd');
+const btnWithdraw   = document.getElementById('btnWithdraw');
+const tapOrb         = document.getElementById('tapOrb');
+const orbZone         = document.querySelector('.orb-zone');
+const toastEl        = document.getElementById('toast');
+const modalOverlay   = document.getElementById('modalOverlay');
+const modalTitle     = document.getElementById('modalTitle');
+const modalText      = document.getElementById('modalText');
+const modalEmoji     = document.getElementById('modalEmoji');
+const modalBtn       = document.getElementById('modalBtn');
+
+/* ==================================================================
+   نجوم خلفية زخرفية
+================================================================== */
+(function buildStars(){
+  const field = document.getElementById('starsField');
+  for(let i=0;i<40;i++){
+    const s = document.createElement('span');
+    s.style.top = Math.random()*100+'%';
+    s.style.left = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*3)+'s';
+    field.appendChild(s);
+  }
+})();
+
+/* ==================================================================
+   عرض / تحديث الواجهة
+================================================================== */
+function render(){
+  if(state.gated){ tapOrb.classList.add('gated'); } else { tapOrb.classList.remove('gated'); }
+  pointsBigEl.textContent = state.totalPoints;
+  usdValueEl.textContent = (Math.min(state.totalPoints,TARGET_POINTS)/TARGET_POINTS*WITHDRAW_USD).toFixed(2);
+  thresholdUsdEl.textContent = WITHDRAW_USD.toFixed(2);
+
+  energyFillEl.style.width = (state.energy/MAX_ENERGY*100)+'%';
+  energyTextEl.textContent = Math.floor(state.energy)+'/'+MAX_ENERGY;
+
+  // شريط تقدم السحب
+  const pct = Math.min(100, (state.totalPoints/TARGET_POINTS)*100);
+  progressFillEl.style.width = pct+'%';
+  progressLabelEl.textContent = Math.min(state.totalPoints,TARGET_POINTS)+' / '+TARGET_POINTS;
+
+  const daysDone = state.activeDays.length;
+  journeySubEl.textContent = 'اليوم '+Math.min(daysDone,MIN_DAYS)+' من '+MIN_DAYS;
+
+  // رحلة الأيام
+  daysRowEl.innerHTML = '';
+  for(let i=1;i<=MIN_DAYS;i++){
+    const node = document.createElement('div');
+    node.className = 'day-node';
+    if(i < daysDone || (i===daysDone)) node.classList.add(i<daysDone?'done':'active');
+    if(i===daysDone) node.classList.add('active');
+    if(i<daysDone) { node.classList.remove('active'); node.classList.add('done'); }
+    node.innerHTML = `<div class="day-dot">${i<daysDone?'✓':i}</div><span class="lbl">يوم ${i}</span>`;
+    daysRowEl.appendChild(node);
+  }
+
+  const eligible = state.totalPoints >= TARGET_POINTS && daysDone >= MIN_DAYS;
+  if(eligible){
+    btnWithdraw.className = 'btn-withdraw unlocked';
+    btnWithdraw.textContent = '💸 اسحب '+WITHDRAW_USD.toFixed(2)+'$ الآن';
+    withdrawNoteEl.textContent = 'رصيدك جاهز! اضغط للسحب.';
+  } else {
+    btnWithdraw.className = 'btn-withdraw locked';
+    btnWithdraw.textContent = '🔒 السحب مقفل';
+    const remainPts = Math.max(0, TARGET_POINTS - state.totalPoints);
+    const remainDays = Math.max(0, MIN_DAYS - daysDone);
+    withdrawNoteEl.textContent =
+      remainPts>0 && remainDays>0
+        ? `متبقي ${remainPts} نقطة و ${remainDays} يوم لعب لفتح السحب.`
+        : remainPts>0
+          ? `متبقي ${remainPts} نقطة فقط لفتح السحب.`
+          : `متبقي ${remainDays} يوم لعب لفتح السحب.`;
+  }
+
+  saveState();
+}
+render();
+
+/* ==================================================================
+   نظام الطاقة (تجدد تلقائي)
+================================================================== */
+setInterval(() => {
+  const now = Date.now();
+  const elapsed = now - state.lastEnergyTs;
+  if(state.energy < MAX_ENERGY && elapsed >= ENERGY_REGEN_MS){
+    const ticks = Math.floor(elapsed/ENERGY_REGEN_MS);
+    state.energy = Math.min(MAX_ENERGY, state.energy + ticks);
+    state.lastEnergyTs = now;
+    render();
+  }
+}, 1000);
+
+/* ==================================================================
+   أدوات مساعدة: توست + بوب أب أرقام
+================================================================== */
+let toastTimer;
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> toastEl.classList.remove('show'), 2200);
+}
+function floatPop(text, x, y){
+  const el = document.createElement('div');
+  el.className = 'float-pop';
+  el.textContent = text;
+  el.style.left = x+'px';
+  el.style.top = y+'px';
+  orbZone.appendChild(el);
+  setTimeout(()=> el.remove(), 900);
+}
+function openModal(emoji, title, text){
+  modalEmoji.textContent = emoji;
+  modalTitle.textContent = title;
+  modalText.textContent = text;
+  modalOverlay.classList.add('show');
+}
+modalBtn.addEventListener('click', ()=> modalOverlay.classList.remove('show'));
+
+/* ==================================================================
+   إضافة نقاط (مع مراعاة الحد اليومي)
+================================================================== */
+function addPoints(amount, {bypassCap=false} = {}){
+  registerTodayActive();
+  const t = todayStr();
+
+  if(!bypassCap){
+    const earnedToday = state.dailyEarned[t] || 0;
+    if(earnedToday >= DAILY_CAP){
+      return {added:0, capped:true};
+    }
+    const allowed = Math.min(amount, DAILY_CAP - earnedToday);
+    state.dailyEarned[t] = earnedToday + allowed;
+    state.totalPoints += allowed;
+    render();
+    return {added:allowed, capped: allowed<amount};
+  } else {
+    state.dailyEarned[t] = (state.dailyEarned[t]||0) + amount;
+    state.totalPoints += amount;
+    render();
+    return {added:amount, capped:false};
+  }
+}
+
+/* ==================================================================
+   الضغط على الجوهرة (التجميع الأساسي)
+================================================================== */
+tapOrb.addEventListener('click', (e) => {
+  // إذا الجوهرة مقفولة بانتظار إعلان البوابة
+  if(state.gated){
+    showRewardedAd(
+      () => {
+        state.gated = false;
+        tapOrb.classList.remove('gated');
+        addPoints(GATE_BONUS_POINTS, {bypassCap:true});
+        showToast('🥕 تمام! رجعت تقدر تصطاد، ونلتك جزرة إضافية');
+        saveState();
+      },
+      () => showToast('⚠️ الإعلان غير متاح حالياً، حاول لاحقاً')
+    );
+    return;
+  }
+
+  if(state.energy < TAP_ENERGY_COST){
+    showToast('🍃 خلصت طاقة الصيد، استخدم زر تعبئة الطاقة أو انتظر قليلاً');
+    return;
+  }
+  state.energy -= TAP_ENERGY_COST;
+  state.lastEnergyTs = Date.now();
+  state.totalTaps += 1;
+
+  const gain = Math.random() < 0.12 ? 3 : 1; // ضغطة حظ نادرة
+  const result = addPoints(gain);
+
+  if(result.added > 0){
+    const rect = tapOrb.getBoundingClientRect();
+    const parentRect = orbZone.getBoundingClientRect();
+    floatPop('+'+result.added+' 🥕', rect.left - parentRect.left + rect.width/2 - 10, rect.top - parentRect.top);
+  }
+
+  // بوابة الإعلان: كل TAPS_PER_GATE ضغطة لازم تتفرج إعلان قصير عشان تكمل
+  if(state.totalTaps > 0 && state.totalTaps % TAPS_PER_GATE === 0){
+    state.gated = true;
+    tapOrb.classList.add('gated');
+    showToast('📺 وصلت '+TAPS_PER_GATE+' ضغطة! اضغط الجوهرة وشاهد إعلان قصير عشان تكمل');
+  }
+
+  if(result.capped && result.added===0){
+    showToast('🌙 وصلت الحد اليومي ('+DAILY_CAP+'). ارجع بكرة أو شاهد إعلان لجزرة إضافية!');
+  }
+  render();
+});
+
+/* ==================================================================
+   زر: نقاط إضافية عبر إعلان (لا يتقيد بالحد اليومي)
+================================================================== */
+document.getElementById('btnBonusAd').addEventListener('click', () => {
+  showRewardedAd(
+    () => {
+      addPoints(BONUS_AD_POINTS, {bypassCap:true});
+      showToast('🎉 حصلت على '+BONUS_AD_POINTS+' جزرة إضافية!');
+    },
+    () => showToast('⚠️ الإعلان غير متاح حالياً، حاول لاحقاً')
+  );
+});
+
+/* ==================================================================
+   زر: تعبئة الطاقة عبر إعلان
+================================================================== */
+document.getElementById('btnRefillAd').addEventListener('click', () => {
+  showRewardedAd(
+    () => {
+      state.energy = MAX_ENERGY;
+      state.lastEnergyTs = Date.now();
+      render();
+      showToast('⚡ تم تعبئة طاقتك بالكامل!');
+    },
+    () => showToast('⚠️ الإعلان غير متاح حالياً، حاول لاحقاً')
+  );
+});
+
+/* ==================================================================
+   زر السحب
+================================================================== */
+btnWithdraw.addEventListener('click', () => {
+  const daysDone = state.activeDays.length;
+  const eligible = state.totalPoints >= TARGET_POINTS && daysDone >= MIN_DAYS;
+  if(!eligible){
+    showToast('🔒 السحب لسا مقفل، كمّل الشروط أول');
+    return;
+  }
+  openModal('💸', 'طلب السحب أُرسل!',
+    'تم تسجيل طلب سحب '+WITHDRAW_USD.toFixed(2)+'$ بنجاح. راجع قناة الدفع الخاصة بك للمتابعة.');
+  // ملاحظة: هذا عرض واجهة فقط — لازم تربطه ببوت/سيرفر فعلي لإتمام الدفع الحقيقي
+});
+</script>
+</body>
+</html>
